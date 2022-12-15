@@ -6,19 +6,27 @@ class Game
     @interface = Interface.new
     @turn = :player1  # player1: X, player2: O (capital o, not zero)
     @grid_spaces = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-    #@grid[1][1].value = "X"
   end
 
   public
   def play
     #while !find_winner()
     9.times do
-      @interface.display(@grid)
-      user_choice = @interface.user_input(false) # here user_choice will always be an integer between 1-9
-      if cell_occupied?(user_choice)
+      @interface.display(@grid, @grid_spaces)
+      user_choice = @interface.user_input(false, @turn) # here user_choice will always be an integer between 1-9
+
+      is_cell_occupied = cell_occupied?(user_choice)
+      if is_cell_occupied[:empty]
         p "Cell is occupied"
       else
+        update_cell(is_cell_occupied[:cell])
         p "Cell is vacant"
+      end
+
+      if @turn == :player1
+        @turn = :player2
+      else
+        @turn = :player1
       end
     #end
     end
@@ -36,8 +44,12 @@ class Game
     return grid
   end
 
-  def update_cell(cell, value)
-
+  def update_cell(cell)
+    if @turn == :player1
+      cell.value = 'X'
+    else
+      cell.value = 'O'
+    end
   end
 
   def find_winner
@@ -50,27 +62,35 @@ class Game
     index = @grid_spaces[row].find_index(num)
     p index
 
+    puts "thingu: #{@grid[row][index]}"
     if(@grid[row][index].value == :vacant )
-      return false
+      return { :empty => false, :cell => @grid[row][index] }
     else
-      return true
+      return { :empty => true, :cell => @grid[row][index] }
     end
   end
 end
 
 class Interface
-  def user_input(error)
+  def user_input(error, turn)
     puts "Invalid input, " if error
-    puts "Make your move: (A number between 1-9)"
+    puts "Make your move, #{turn}: (A number between 1-9)"
     input = gets.chomp
     # validate that input is between 1 and 9
     return input.to_i
   end
 
-  def display(grid)
-    grid.each do |row|
-      row.each { |cell| print "| #{cell.value} " }
-      puts "|\n"
+  def display(grid, grid_spaces)
+    grid.each_with_index do |row, i|
+      print "|"
+      row.each_with_index do |cell, j|
+        if cell.value != :vacant
+          print " #{cell.value} |"
+        else
+          print " #{grid_spaces[i][j]} |"
+        end
+      end
+      puts "\n"
     end
   end
 
