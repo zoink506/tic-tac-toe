@@ -4,15 +4,24 @@ class Game
     # Create the board
     @grid = create_grid()
     @interface = Interface.new
+    @turn = :player1  # player1: X, player2: O (capital o, not zero)
+    @grid_spaces = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    #@grid[1][1].value = "X"
   end
 
   public
   def play
     #while !find_winner()
+    9.times do
       @interface.display(@grid)
-      user_choice = @interface.user_input
-
+      user_choice = @interface.user_input(false) # here user_choice will always be an integer between 1-9
+      if cell_occupied?(user_choice)
+        p "Cell is occupied"
+      else
+        p "Cell is vacant"
+      end
     #end
+    end
   end
 
   private
@@ -35,17 +44,27 @@ class Game
     # returns boolean if a winning combination is found on the board
     false
   end
+
+  def cell_occupied?(num)
+    row = ((num-1) / 3).floor
+    index = @grid_spaces[row].find_index(num)
+    p index
+
+    if(@grid[row][index].value == :vacant )
+      return false
+    else
+      return true
+    end
+  end
 end
 
 class Interface
-  def user_input
-    puts "Make your move: "
+  def user_input(error)
+    puts "Invalid input, " if error
+    puts "Make your move: (A number between 1-9)"
     input = gets.chomp
-    if validate_input?(input)
-      return input
-    else
-      user_input()
-    end
+    # validate that input is between 1 and 9
+    return input.to_i
   end
 
   def display(grid)
@@ -58,7 +77,13 @@ class Interface
   private
   def validate_input?(input)
     # returns true if input is between 1-9, false if not
-    input = input.to_i
+    #input = input.to_i
+    #if input >= 1 && input <= 9
+      # check if the cell is occupied as well
+    #  return true
+    #else
+    #  user_input(true)
+    #end
   end
 end
 
