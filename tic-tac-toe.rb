@@ -1,3 +1,9 @@
+# TO DO
+# > Add input validation so only integers 1-9 can be input, otherwise keep looping the input function until that is true - 3
+# > Add function to check if there are 3 values in a row - 1
+# > Keep looping play() while that is true - 2
+# > 
+
 class Game
   attr_accessor :grid
   def initialize
@@ -23,6 +29,11 @@ class Game
         p "Cell is vacant"
       end
 
+      if find_winner() != false
+        @interface.display(@grid, @grid_spaces)
+        puts "GAME OVER!"
+        break
+      end
       if @turn == :player1
         @turn = :player2
       else
@@ -53,7 +64,33 @@ class Game
   end
 
   def find_winner
-    # returns boolean if a winning combination is found on the board
+    # create array for each row, column, and diagonal
+    # check if all elements in that array is X or O
+    # profit
+    @grid.each do |row|
+      # rows
+      if row.all? { |cell| cell.value == "X" }
+        return "X"
+      elsif row.all? { |cell| cell.value == "O" }
+        return "O"
+      end
+    end
+
+    i = 0
+    while i < @grid.length
+      # columns
+      column = []
+      
+      j = 0
+      while j < @grid.length
+        column.push(@grid[j][i])
+        j += 1
+      end
+      
+      return column[0] if column.all? { |cell| cell.value == 'X' } || column.all? { |cell| cell.value == 'O' }
+      i += 1
+    end
+
     false
   end
 
