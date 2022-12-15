@@ -1,8 +1,6 @@
 # TO DO
-# > Add input validation so only integers 1-9 can be input, otherwise keep looping the input function until that is true - 3
-# > Add function to check if there are 3 values in a row - 1
-# > Keep looping play() while that is true - 2
-# > 
+# > Add score over multiple games
+# > Add way to exit game in middle of match
 
 class Game
   attr_accessor :grid
@@ -16,31 +14,27 @@ class Game
 
   public
   def play
-    #while !find_winner()
-    9.times do
+    while !find_winner()
       @interface.display(@grid, @grid_spaces)
-      user_choice = @interface.user_input(false, @turn) # here user_choice will always be an integer between 1-9
+      user_choice = @interface.user_input(@turn) # here user_choice will always be an integer between 1-9
 
       is_cell_occupied = cell_occupied?(user_choice)
-      if is_cell_occupied[:empty]
-        p "Cell is occupied"
-      else
+      if !is_cell_occupied[:empty] # cell is not empty
+        puts "Cell is occupied, choose another cell"
+        next
+      else # cell is empty
         update_cell(is_cell_occupied[:cell])
-        p "Cell is vacant"
       end
 
-      if find_winner() != false
-        @interface.display(@grid, @grid_spaces)
-        puts "GAME OVER!"
-        break
-      end
       if @turn == :player1
         @turn = :player2
       else
         @turn = :player1
       end
-    #end
     end
+
+    @interface.display(@grid, @grid_spaces)
+    puts "GAME OVER!"
   end
 
   private
@@ -80,7 +74,7 @@ class Game
     while i < @grid.length
       # columns
       column = []
-      
+
       j = 0
       while j < @grid.length
         column.push(@grid[j][i])
@@ -91,30 +85,60 @@ class Game
       i += 1
     end
 
+    # diagonals
+    diagonal = []
+    i = 0
+    while i < @grid.length
+      diagonal.push(@grid[i][i])
+      i += 1
+    end
+    return diagonal[0] if diagonal.all? { |cell| cell.value == 'X' } || column.all? { |cell| cell.value == 'O' }
+
+    diagonal = []
+    i = 0
+    j = grid.length - 1
+    while i < grid.length
+      diagonal.push(@grid[i][j])
+
+      j -= 1
+      i += 1
+    end
+    return diagonal[0] if diagonal.all? { |cell| cell.value == 'X' } || column.all? { |cell| cell.value == 'O' }
+
+    # check if the grid is full, return true if it is full
+    rows_full = 0
+    @grid.each do |row|
+      rows_full += 1 if row.all? { |cell| cell.value != :vacant }
+    end
+    return true if rows_full == @grid.length
+
     false
   end
 
   def cell_occupied?(num)
     row = ((num-1) / 3).floor
     index = @grid_spaces[row].find_index(num)
-    p index
+    #p index
 
-    puts "thingu: #{@grid[row][index]}"
+    #puts "thingu: #{@grid[row][index]}"
     if(@grid[row][index].value == :vacant )
-      return { :empty => false, :cell => @grid[row][index] }
-    else
       return { :empty => true, :cell => @grid[row][index] }
+    else
+      return { :empty => false, :cell => @grid[row][index] }
     end
   end
 end
 
 class Interface
-  def user_input(error, turn)
-    puts "Invalid input, " if error
+  def user_input(turn)
     puts "Make your move, #{turn}: (A number between 1-9)"
     input = gets.chomp
     # validate that input is between 1 and 9
-    return input.to_i
+    if validate_input?(input)
+      return input.to_i
+    else
+      user_input(turn)
+    end
   end
 
   def display(grid, grid_spaces)
@@ -129,18 +153,18 @@ class Interface
       end
       puts "\n"
     end
+    puts "\n"
   end
 
   private
   def validate_input?(input)
     # returns true if input is between 1-9, false if not
-    #input = input.to_i
-    #if input >= 1 && input <= 9
-      # check if the cell is occupied as well
-    #  return true
-    #else
-    #  user_input(true)
-    #end
+    input = input.to_i
+    if input >= 1 && input <= 9 
+      return true
+    else
+      return false
+    end
   end
 end
 
